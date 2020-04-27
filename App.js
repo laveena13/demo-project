@@ -1,13 +1,26 @@
 import * as React from 'react';
-import { Platform, StatusBar, StyleSheet, View } from 'react-native';
+import { Platform, StatusBar, StyleSheet, View,SafeAreaView } from 'react-native';
 import { SplashScreen } from 'expo';
 import * as Font from 'expo-font';
 import { Ionicons } from '@expo/vector-icons';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
+import  AppRouter from './AppRouter'
 
 import BottomTabNavigator from './navigation/BottomTabNavigator';
 import useLinking from './navigation/useLinking';
+
+
+import {Provider} from 'react-redux';
+
+import configureStore from "./configStore";
+
+const store = configureStore();
+
+
+
+
+
 
 const Stack = createStackNavigator();
 
@@ -48,12 +61,14 @@ export default function App(props) {
   } else {
     return (
       <View style={styles.container}>
-        {Platform.OS === 'ios' && <StatusBar barStyle="default" />}
-        <NavigationContainer ref={containerRef} initialState={initialNavigationState}>
-          <Stack.Navigator>
-            <Stack.Screen name="Root" component={BottomTabNavigator} />
-          </Stack.Navigator>
-        </NavigationContainer>
+        <StatusBar barStyle="dark-content"/>
+        <SafeAreaView style={{flex: 1}}>
+          <Provider store={store}>
+            <AppRouter/>
+          </Provider>
+        </SafeAreaView>
+
+
       </View>
     );
   }

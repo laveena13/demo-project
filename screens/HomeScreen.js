@@ -1,105 +1,229 @@
-import * as WebBrowser from 'expo-web-browser';
-import * as React from 'react';
-import { Image, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useState,useEffect } from "react";
+import { Image, Platform, StyleSheet, Text, TouchableOpacity, View,TextInput,Button } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
+import FloatingLabel from '../components/FloatingLabel'
+import  axios from '../services/axiosConfig';
 
-import { MonoText } from '../components/StyledText';
+export default function HomeScreen(props) {
 
-export default function HomeScreen() {
-  return (
-    <View style={styles.container}>
-      <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-        <View style={styles.welcomeContainer}>
-          <Image
-            source={
-              __DEV__
-                ? require('../assets/images/robot-dev.png')
-                : require('../assets/images/robot-prod.png')
-            }
-            style={styles.welcomeImage}
-          />
-        </View>
+    //create states
+  const [employees, setEmployees] = useState([]);
+  const [name, setName] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [address,setAddress]=useState('');
+  const [age, setAge] = useState('');
+  const [id, setId] = useState('');
+  const [salary, setSalary] = useState('');
+  const [email, setEmail] = useState('');
+  const [isFocused, setIsFocused] = useState(false);
+  const [location, setLocation] = useState('');
 
-        <View style={styles.getStartedContainer}>
-          <DevelopmentModeNotice />
+// find the coordinates
+   function findCoordinates(){
+        navigator.geolocation.getCurrentPosition(
+            position => {
+                const location = JSON.stringify(position);
 
-          <Text style={styles.getStartedText}>Open up the code for this screen:</Text>
+                setLocation(location);
+            },
+            error => Alert.alert(error.message),
+            { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
+        );
+    };
 
-          <View style={[styles.codeHighlightContainer, styles.homeScreenFilename]}>
-            <MonoText>screens/HomeScreen.js</MonoText>
-          </View>
 
-          <Text style={styles.getStartedText}>
-            Change any of the text, save the file, and your app will automatically reload.
-          </Text>
-        </View>
-
-        <View style={styles.helpContainer}>
-          <TouchableOpacity onPress={handleHelpPress} style={styles.helpLink}>
-            <Text style={styles.helpLinkText}>Help, it didn’t automatically reload!</Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-
-      <View style={styles.tabBarInfoContainer}>
-        <Text style={styles.tabBarInfoText}>This is a tab bar. You can edit it in:</Text>
-
-        <View style={[styles.codeHighlightContainer, styles.navigationFilename]}>
-          <MonoText style={styles.codeHighlightText}>navigation/BottomTabNavigator.js</MonoText>
-        </View>
-      </View>
-    </View>
-  );
-}
-
-HomeScreen.navigationOptions = {
-  header: null,
-};
-
-function DevelopmentModeNotice() {
-  if (__DEV__) {
-    const learnMoreButton = (
-      <Text onPress={handleLearnMorePress} style={styles.helpLinkText}>
-        Learn more
-      </Text>
-    );
-
-    return (
-      <Text style={styles.developmentModeText}>
-        Development mode is enabled: your app will be slower but you can use useful development
-        tools. {learnMoreButton}
-      </Text>
-    );
-  } else {
-    return (
-      <Text style={styles.developmentModeText}>
-        You are not in development mode: your app will run at full speed.
-      </Text>
-    );
+//get api for employees
+ function getEmployee() {
+     axios.get('/employee')
+        .then(res => {
+          setEmployees(res.data);
+        })
   }
-}
+  useEffect(() => {
+    getEmployee()
 
-function handleLearnMorePress() {
-  WebBrowser.openBrowserAsync('https://docs.expo.io/versions/latest/workflow/development-mode/');
-}
+  }, );
+//updating value in the list
+ function update(e) {
+     let data = {
+         "employee_name": name,
+         "employee_phone_number": phoneNumber,
+         "age": age,
+         "salary":salary,
+         "email": email
 
-function handleHelpPress() {
-  WebBrowser.openBrowserAsync(
-    'https://docs.expo.io/versions/latest/get-started/create-a-new-app/#making-your-first-change'
+
+     };
+    axios.put('/employee/:id', data)
+        .then(res => console.log(res.data));
+  }
+  //adding value to the list
+    function addingDetailToList() {
+
+        let data = {
+            "employee_name": name,
+            "employee_phone_number": phoneNumber,
+            "age": age,
+            "salary":salary,
+            "email": email
+        };
+        return axios.post('/employees', data).then((response) => {
+
+                console.log(response.data);
+            }).catch((error) => {
+            console.log('error..................................')
+        });
+    }
+    function isValidForm () {
+        return phoneNumber && phoneNumber.length >= 10;
+    }
+
+    // navigate to employee detail screen
+  function onSubmit(e) {
+    props.navigation.navigate("EmployeeDetails",{users:employees})
+  }
+
+  return (
+      <View style={styles.container}>
+          <Text style={styles.formHeading}>
+              Employee Details Form</Text>
+        <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+
+          <View style={styles.welcomeContainer}>
+              <Text style={{fontSize:14,
+                  fontWeight:'bold'}}>Please Enter The Details</Text>
+                <View style={{justifyContent:'center',alignItems:'center',marginTop: 30,marginBottom:30}}>
+                    <FloatingLabel
+                        labelStyle={isFocused ? styles.labelInputOnFocus : styles.labelInputOnBlur}
+                        inputStyle={styles.input}
+                        style={isFocused ? styles.formInputOnFoucs : styles.formInputOnBlur}
+                        keyboardType='email-address'
+                        autoCapitalize='none'
+                        autoComplete='off'
+                        onFocus={() => setIsFocused(true)}
+                        onBlur={() => setIsFocused(false)}
+                        onChangeText={(text) => setName(text)}
+                    >NAME</FloatingLabel>
+                    <FloatingLabel
+                        labelStyle={isFocused ? styles.labelInputOnFocus : styles.labelInputOnBlur}
+                        inputStyle={styles.input}
+                        style={isFocused ? styles.formInputOnFoucs : styles.formInputOnBlur}
+                        keyboardType='email-address'
+                        autoCapitalize='none'
+                        autoComplete='off'
+                        onFocus={() => setIsFocused(true)}
+                        onBlur={() => setIsFocused(false)}
+                        onChangeText={(text) => setEmail(text)}
+                    >EMAIL</FloatingLabel>
+                    <FloatingLabel
+                        labelStyle={isFocused ? styles.labelInputOnFocus : styles.labelInputOnBlur}
+                        inputStyle={styles.input}
+                        style={isFocused ? styles.formInputOnFoucs : styles.formInputOnBlur}
+                        keyboardType='numeric'
+                        maxLength={10}
+                        autoCapitalize='none'
+                        autoComplete='off'
+                        onFocus={() => setIsFocused(true)}
+                        onBlur={() => setIsFocused(false)}
+                        onChangeText={(text) => setPhoneNumber('')}
+                    >PHONE NUMBER</FloatingLabel>
+                    <FloatingLabel
+                        labelStyle={isFocused ? styles.labelInputOnFocus : styles.labelInputOnBlur}
+                        inputStyle={styles.input}
+                        style={isFocused ? styles.formInputOnFoucs : styles.formInputOnBlur}
+                        keyboardType='numeric'
+                        maxLength={10}
+                        autoCapitalize='none'
+                        autoComplete='off'
+                        onFocus={() => setIsFocused(true)}
+                        onBlur={() => setIsFocused(false)}
+                        onChangeText={(text) => setAge('')}
+                    >AGE</FloatingLabel>
+                    <FloatingLabel
+                        labelStyle={isFocused ? styles.labelInputOnFocus : styles.labelInputOnBlur}
+                        inputStyle={styles.input}
+                        style={isFocused ? styles.formInputOnFoucs : styles.formInputOnBlur}
+                        keyboardType='numeric'
+                        maxLength={10}
+                        autoCapitalize='none'
+                        autoComplete='off'
+                        onFocus={() => setIsFocused(true)}
+                        onBlur={() => setIsFocused(false)}
+                        onChangeText={(text) => setSalary('')}
+                    >SALARY</FloatingLabel>
+
+                    <TouchableOpacity onPress={findCoordinates}>
+                        <Text style={styles.welcome}>Find My Coords?</Text>
+                        <Text>Location: {location}</Text>
+                    </TouchableOpacity>
+
+                </View>
+
+       <View style={{marginBottom:30}}>
+           <Button
+               onPress={addingDetailToList}
+               title="Add Detail To List"
+               color="#841584"
+               accessibilityLabel="Learn more about this purple button"
+               disabled={!isValidForm()}
+           />
+       </View>
+
+           <View>
+               <Button
+                   onPress={onSubmit}
+                   title="employee detail"
+                   color="#841584"
+                   accessibilityLabel="Learn more about this purple button"
+               />
+
+           </View>
+
+              <Button
+                  onPress={update}
+                  title="update"
+                  color="#841584"
+                  accessibilityLabel="Learn more about this purple button"
+              />
+
+          </View>
+        </ScrollView>
+      </View>
   );
 }
 
 const styles = StyleSheet.create({
+   formHeading:{
+       textAlign:'center',
+       fontSize:18,
+       fontWeight:'bold',
+       backgroundColor: 'green',
+       padding:30
+   },
+    formInputOnFoucs: {
+        borderBottomWidth: 1.5,
+        borderColor: 'gray',
+    },
+    formInputOnBlur: {
+        borderBottomWidth: 1.5,
+        borderColor: 'black',
+    },
+    input: {
+        borderWidth: 0,
+        color: 'black',
+        fontSize: 15,
+        width:250
+    },
+    labelInputOnBlur: {
+        fontSize: 14,
+    },
+    labelInputOnFocus: {
+        color: 'red',
+        fontSize: 13,
+    },
   container: {
     flex: 1,
     backgroundColor: '#fff',
-  },
-  developmentModeText: {
-    marginBottom: 20,
-    color: 'rgba(0,0,0,0.4)',
-    fontSize: 14,
-    lineHeight: 19,
-    textAlign: 'center',
   },
   contentContainer: {
     paddingTop: 30,
@@ -108,72 +232,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 10,
     marginBottom: 20,
-  },
-  welcomeImage: {
-    width: 100,
-    height: 80,
-    resizeMode: 'contain',
-    marginTop: 3,
-    marginLeft: -10,
-  },
-  getStartedContainer: {
-    alignItems: 'center',
-    marginHorizontal: 50,
-  },
-  homeScreenFilename: {
-    marginVertical: 7,
-  },
-  codeHighlightText: {
-    color: 'rgba(96,100,109, 0.8)',
-  },
-  codeHighlightContainer: {
-    backgroundColor: 'rgba(0,0,0,0.05)',
-    borderRadius: 3,
-    paddingHorizontal: 4,
-  },
-  getStartedText: {
-    fontSize: 17,
-    color: 'rgba(96,100,109, 1)',
-    lineHeight: 24,
-    textAlign: 'center',
-  },
-  tabBarInfoContainer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    ...Platform.select({
-      ios: {
-        shadowColor: 'black',
-        shadowOffset: { width: 0, height: -3 },
-        shadowOpacity: 0.1,
-        shadowRadius: 3,
-      },
-      android: {
-        elevation: 20,
-      },
-    }),
-    alignItems: 'center',
-    backgroundColor: '#fbfbfb',
-    paddingVertical: 20,
-  },
-  tabBarInfoText: {
-    fontSize: 17,
-    color: 'rgba(96,100,109, 1)',
-    textAlign: 'center',
-  },
-  navigationFilename: {
-    marginTop: 5,
-  },
-  helpContainer: {
-    marginTop: 15,
-    alignItems: 'center',
-  },
-  helpLink: {
-    paddingVertical: 15,
-  },
-  helpLinkText: {
-    fontSize: 14,
-    color: '#2e78b7',
   },
 });
