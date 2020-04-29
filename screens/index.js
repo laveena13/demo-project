@@ -1,7 +1,7 @@
 import HomeScreen from "./HomeScreen";
-import EmployeeDetailsScreen from "./EmployeeDetailsScreen";
+import DetailScreen from "./DetailScreen";
 
 export {
   HomeScreen,
-  EmployeeDetailsScreen
+  DetailScreen
 };

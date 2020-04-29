@@ -5,7 +5,7 @@ import {
   HomeScreen
 } from "./screens";
 import {
-  EmployeeDetailsScreen
+    DetailScreen
 } from "./screens";
 import BottomTabNavigator from "./navigation/BottomTabNavigator";
 import {View} from "react-native";
@@ -19,7 +19,7 @@ function AppRouter () {
         headerShown: false,
       }}>
         <Stack.Screen name="Home" component={HomeScreen} />
-        <Stack.Screen name="EmployeeDetails" component={EmployeeDetailsScreen} />
+        <Stack.Screen name="Detail" component={DetailScreen} />
           <Stack.Screen name="Root" component={BottomTabNavigator} />
 
       </Stack.Navigator>
